@@ -1,0 +1,13 @@
+{
+  "domain": "coleman_mach_ble",
+  "name": "Coleman Mach BLE",
+  "version": "1.0.0",
+  "documentation": "https://github.com/mallorybowes/ha-coleman-mach-ble",
+  "issue_tracker": "https://github.com/mallorybowes/ha-coleman-mach-ble/issues",
+  "requirements": [],
+  "dependencies": ["bluetooth"],
+  "codeowners": ["@mallorybowes"],
+  "config_flow": true,
+  "iot_class": "local_polling",
+  "homeassistant": "2024.1.0"
+}

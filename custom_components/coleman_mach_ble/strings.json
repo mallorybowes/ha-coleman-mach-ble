@@ -1,0 +1,21 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Coleman Mach BLE Thermostat",
+        "description": "Set up your Coleman Mach Bluetooth AC thermostat.\nDefault MAC is pre-filled — change if needed.",
+        "data": {
+          "mac_address": "Bluetooth MAC Address",
+          "name": "Device Name",
+          "poll_interval": "Poll Interval (seconds)"
+        }
+      }
+    },
+    "error": {
+      "invalid_mac": "Invalid MAC address format. Use XX:XX:XX:XX:XX:XX."
+    },
+    "abort": {
+      "already_configured": "Device already configured."
+    }
+  }
+}

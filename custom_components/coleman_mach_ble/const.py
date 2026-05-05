@@ -1,0 +1,46 @@
+"""Constants for Coleman Mach BLE integration."""
+
+DOMAIN = "coleman_mach_ble"
+DATA_COORDINATOR = "coordinator"
+DEFAULT_POLL_INTERVAL = 30  # seconds
+
+# BLE Service
+THERMOSTAT_SERVICE_UUID = "c9282723-4680-491b-a904-c066fa81061f"
+
+# BLE Characteristics
+CHAR_ROOM_TEMPERATURE = "382b4008-084a-4158-b378-66674091b1e2"
+CHAR_ZONE_ID         = "beb89473-05fe-41a0-9896-2c082660f19a"
+CHAR_MODE_OPERATION  = "9230a9ef-347c-4645-8fd9-cbb830d714bf"
+CHAR_AVAILABLE_MODE  = "0575cdb7-d448-4bff-bc53-3b900d2a829f"
+CHAR_SET_POINT       = "09996813-fe7d-48ce-9b47-11634c80263c"
+CHAR_CELSIUS         = "3016e3fc-1dbb-455e-b268-80750e36c950"
+CHAR_UNIT_ID         = "e21b2b2c-379e-4166-b835-c71ef7eadfdf"
+
+# Read order matches the app's initReadList: [2,5,3,1,6,4,7]
+# 2=ZONE_ID, 5=SET_POINT, 3=MODE_OPERATION, 1=ROOM_TEMP, 6=CELSIUS, 4=AVAIL_MODE, 7=UNIT_ID
+READ_ORDER = [
+    CHAR_ZONE_ID,
+    CHAR_SET_POINT,
+    CHAR_MODE_OPERATION,
+    CHAR_ROOM_TEMPERATURE,
+    CHAR_CELSIUS,
+    CHAR_AVAILABLE_MODE,
+    CHAR_UNIT_ID,
+]
+
+# All known operation mode strings the device can report
+ALL_MODES = [
+    "COOL HIGH",
+    "COOL AUTO HIGH",
+    "COOL AUTO LOW",
+    "COOL LOW",
+    "FAN HIGH",
+    "FAN LOW",
+    "HEAT",
+    "HEAT ELEC",
+    "HEAT GAS",
+]
+
+COOL_MODES = {"COOL HIGH", "COOL AUTO HIGH", "COOL AUTO LOW", "COOL LOW"}
+FAN_MODES   = {"FAN HIGH", "FAN LOW"}
+HEAT_MODES  = {"HEAT", "HEAT ELEC", "HEAT GAS"}

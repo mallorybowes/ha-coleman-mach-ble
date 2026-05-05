@@ -1,0 +1,25 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Coleman Mach BLE",
+        "description": "Set up your Coleman Mach Bluetooth AC thermostat. Find the MAC address in your router's device list or using a BLE scanner app.",
+        "data": {
+          "mac_address": "Bluetooth MAC Address",
+          "name": "Device Name",
+          "poll_interval": "Poll Interval (seconds)"
+        },
+        "data_description": {
+          "mac_address": "Format: XX:XX:XX:XX:XX:XX",
+          "poll_interval": "How often to poll the AC for updates (10–300 seconds)"
+        }
+      }
+    },
+    "error": {
+      "invalid_mac": "Invalid MAC address format. Use XX:XX:XX:XX:XX:XX."
+    },
+    "abort": {
+      "already_configured": "This device is already configured."
+    }
+  }
+}
