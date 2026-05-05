@@ -52,20 +52,21 @@ The AC requires BLE "Just Works" pairing before it will accept GATT connections.
 
 **Re-pairing steps:**
 
-1. Put the AC into pairing mode (refer to your AC manual).
-
-2. From the **Terminal & SSH add-on**, have these commands typed and ready *before* entering pairing mode — the window is short:
+1. From the **Terminal & SSH add-on**, have these commands typed and ready *before* entering pairing mode — the window is short:
 
    ```
    bluetoothctl
    agent NoInputNoOutput
    default-agent
-   pair <YOUR_MAC_ADDRESS>
+   pair <YOUR_MAC_ADDRESS> *Don't hit enter on this command until step #2.  The pairing window is short.*
    ```
+2. Put the AC into pairing mode (refer to your AC manual).
 
    `NoInputNoOutput` forces "Just Works" pairing with no PIN required at the BLE level.
 
-3. Re-enable the integration if you disabled it during troubleshooting.
+3.  Hit enter for the pairing command above.  It will ask for a pairing number which will be the number flashing on the LCD screen on the AC unit.
+
+4. Re-enable the integration if you disabled it during troubleshooting.
 
 > **Note:** The 6-digit code shown in the Coleman Mach Smart Comfort app is an *application-level* PIN, not a BLE pairing passkey. Do not enter it in `bluetoothctl`.
 
