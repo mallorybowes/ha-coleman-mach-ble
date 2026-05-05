@@ -3,7 +3,7 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
-A Home Assistant custom integration for Coleman Mach Bluetooth AC units. Provides a `climate` entity with current temperature, set point, and operating mode — all over BLE, no cloud required.
+A Home Assistant custom integration for Coleman Mach Bluetooth RV Air Conditioning units. Provides a `climate` entity with current temperature, set point, and operating mode — all over BLE, no cloud required.  This is vibeware and no guarantees are given.  It works on my AC unit but it's also the only one I can test on.  YMMV.
 
 > **Not affiliated with or endorsed by Airxcel, Inc. or the Coleman Mach brand.**
 
