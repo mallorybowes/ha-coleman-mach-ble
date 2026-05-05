@@ -41,7 +41,7 @@ Copy the `custom_components/coleman_mach_ble/` folder into your HA config's `cus
 
 1. Go to **Settings → Integrations → Add Integration**
 2. Search for "Coleman Mach BLE"
-3. Enter the Bluetooth MAC address of your AC unit (find it with a BLE scanner app or your router's device list)
+3. Enter the Bluetooth MAC address of your AC unit (find it with a BLE scanner app or your router's device list.  Android [howto](https://github.com/mallorybowes/ha-coleman-mach-ble/docs/finding_mac_address.md) located in the /docs directory.)
 4. Set a name and poll interval
 
 ## Troubleshooting
