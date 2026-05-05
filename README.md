@@ -12,8 +12,6 @@ A Home Assistant custom integration for Coleman Mach Bluetooth RV Air Conditioni
 
 <img width="518" height="274" alt="Screenshot_20260505_123245" src="https://github.com/user-attachments/assets/eb637663-985a-48f3-ac48-c410701fd7a1" />
 <img width="637" height="797" alt="Screenshot_20260505_123157" src="https://github.com/user-attachments/assets/1fc85cc8-20fa-4ca4-a05c-9aa590c736e7" />
-<img width="640" height="656" alt="Screenshot_20260505_123329" src="https://github.com/user-attachments/assets/2cada7fd-40a2-43b4-a682-03a6badf3933" />
-<img width="641" height="651" alt="Screenshot_20260505_123438" src="https://github.com/user-attachments/assets/39a2e9ca-4c31-4839-94b5-05424184925c" />
 <img width="641" height="822" alt="Screenshot_20260505_123405" src="https://github.com/user-attachments/assets/093194b6-e6f8-46cd-8c68-645a489fc5b4" />
 ---
 
