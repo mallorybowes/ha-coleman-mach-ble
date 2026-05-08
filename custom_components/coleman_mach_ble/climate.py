@@ -31,7 +31,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def _mode_to_hvac(mode: str | None) -> HVACMode:
-    if not mode:
+    if not mode or mode == "OFF":
         return HVACMode.OFF
     if mode in COOL_MODES:
         return HVACMode.COOL
@@ -63,7 +63,6 @@ class ColemanMachClimate(CoordinatorEntity[ColemanMachCoordinator], ClimateEntit
         | ClimateEntityFeature.PRESET_MODE
     )
 
-    # All HVAC modes this device supports
     _attr_hvac_modes = [
         HVACMode.OFF,
         HVACMode.COOL,
@@ -157,8 +156,7 @@ class ColemanMachClimate(CoordinatorEntity[ColemanMachCoordinator], ClimateEntit
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         current_preset = self.preset_mode
         if hvac_mode == HVACMode.OFF:
-            # Best approximation: set fan low (minimum activity)
-            new_mode = "FAN LOW"
+            new_mode = "OFF"
         elif hvac_mode == HVACMode.COOL:
             # Keep existing fan speed if we can; default to COOL HIGH
             if current_preset and "AUTO" in current_preset:
