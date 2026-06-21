@@ -19,8 +19,8 @@ from .const import ALL_MODES
 def modes_from_available(available: bytes | None) -> list[str]:
     """Map the positional AVAILABLE_MODE array to supported mode strings.
 
-    Returns ALL_MODES (order-preserving) when the array is missing, empty, or
-    all-zero, so callers never receive an empty list.
+    Returns ALL_MODES (order-preserving) when the array is missing, empty,
+    all-zero, or shorter than ALL_MODES, so callers never receive an empty list.
     """
     if not available or len(available) < len(ALL_MODES):
         return list(ALL_MODES)
