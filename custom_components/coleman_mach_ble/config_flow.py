@@ -9,10 +9,11 @@ from typing import Any
 import voluptuous as vol
 
 from homeassistant import config_entries
-from homeassistant.core import HomeAssistant
+from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.helpers import config_validation as cv
 
-from .const import DOMAIN, DEFAULT_POLL_INTERVAL
+from .const import DOMAIN, DEFAULT_POLL_INTERVAL, ALL_MODES, OPTION_EXCLUDED_MODES
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -31,6 +32,11 @@ class ColemanMachConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Coleman Mach BLE."""
 
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        return ColemanMachOptionsFlow(config_entry)
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -57,3 +63,26 @@ class ColemanMachConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=STEP_USER_SCHEMA,
             errors=errors,
         )
+
+
+class ColemanMachOptionsFlow(config_entries.OptionsFlow):
+    """Let the user hide modes the thermostat reports but doesn't support."""
+
+    def __init__(self, config_entry) -> None:
+        self._entry = config_entry
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        if user_input is not None:
+            return self.async_create_entry(title="", data=user_input)
+
+        current = self._entry.options.get(OPTION_EXCLUDED_MODES, [])
+        schema = vol.Schema(
+            {
+                vol.Optional(
+                    OPTION_EXCLUDED_MODES, default=current
+                ): cv.multi_select({mode: mode for mode in ALL_MODES}),
+            }
+        )
+        return self.async_show_form(step_id="init", data_schema=schema)

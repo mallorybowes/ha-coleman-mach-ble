@@ -28,6 +28,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         DATA_COORDINATOR: coordinator,
     }
 
+    entry.async_on_unload(entry.add_update_listener(_async_options_updated))
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     # Fetch initial data in the background so HA boot isn't blocked
@@ -46,3 +48,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id)
     return unload_ok
+
+
+async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Reload the entry so updated options take effect."""
+    await hass.config_entries.async_reload(entry.entry_id)
