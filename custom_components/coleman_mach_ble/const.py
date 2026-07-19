@@ -44,3 +44,6 @@ ALL_MODES = [
 COOL_MODES = {"COOL HIGH", "COOL AUTO HIGH", "COOL AUTO LOW", "COOL LOW"}
 FAN_MODES   = {"FAN HIGH", "FAN LOW"}
 HEAT_MODES  = {"HEAT", "HEAT ELEC", "HEAT GAS"}
+
+# Options-flow key: list of ALL_MODES strings the user has chosen to hide.
+OPTION_EXCLUDED_MODES = "excluded_modes"

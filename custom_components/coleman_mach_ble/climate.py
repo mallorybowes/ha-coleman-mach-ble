@@ -12,7 +12,7 @@ from homeassistant.components.climate import (
     HVACAction,
 )
 from homeassistant.const import UnitOfTemperature, ATTR_TEMPERATURE
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.config_entries import ConfigEntry
@@ -20,12 +20,13 @@ from homeassistant.config_entries import ConfigEntry
 from .const import (
     DOMAIN,
     DATA_COORDINATOR,
-    ALL_MODES,
     COOL_MODES,
     FAN_MODES,
     HEAT_MODES,
+    OPTION_EXCLUDED_MODES,
 )
 from .coordinator import ColemanMachCoordinator
+from .modes import resolve_preset_modes, choose_write_mode
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -63,16 +64,6 @@ class ColemanMachClimate(CoordinatorEntity[ColemanMachCoordinator], ClimateEntit
         | ClimateEntityFeature.PRESET_MODE
     )
 
-    _attr_hvac_modes = [
-        HVACMode.OFF,
-        HVACMode.COOL,
-        HVACMode.HEAT,
-        HVACMode.FAN_ONLY,
-    ]
-
-    # All preset modes (the raw Coleman Mach mode strings)
-    _attr_preset_modes = ALL_MODES
-
     _attr_target_temperature_step = 1.0
     _attr_min_temp = 60.0   # °F or °C — will be overridden by unit
     _attr_max_temp = 90.0
@@ -91,6 +82,28 @@ class ColemanMachClimate(CoordinatorEntity[ColemanMachCoordinator], ClimateEntit
             "manufacturer": "Coleman Mach / ICM Controls",
             "model": "9430-720 BLE Control Assembly",
         }
+
+    def _excluded_modes(self) -> set[str]:
+        return set(self._entry.options.get(OPTION_EXCLUDED_MODES, []))
+
+    @property
+    def preset_modes(self) -> list[str]:
+        available = (
+            self.coordinator.data.available_modes if self.coordinator.data else None
+        )
+        return resolve_preset_modes(available, self._excluded_modes())
+
+    @property
+    def hvac_modes(self) -> list[HVACMode]:
+        presets = self.preset_modes
+        modes = [HVACMode.OFF]
+        if any(m in COOL_MODES for m in presets):
+            modes.append(HVACMode.COOL)
+        if any(m in HEAT_MODES for m in presets):
+            modes.append(HVACMode.HEAT)
+        if any(m in FAN_MODES for m in presets):
+            modes.append(HVACMode.FAN_ONLY)
+        return modes
 
     @property
     def temperature_unit(self) -> str:
@@ -154,29 +167,30 @@ class ColemanMachClimate(CoordinatorEntity[ColemanMachCoordinator], ClimateEntit
         await self.coordinator.async_request_refresh()
 
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
-        current_preset = self.preset_mode
         if hvac_mode == HVACMode.OFF:
-            new_mode = "OFF"
-        elif hvac_mode == HVACMode.COOL:
-            # Keep existing fan speed if we can; default to COOL HIGH
-            if current_preset and "AUTO" in current_preset:
-                new_mode = "COOL AUTO HIGH"
-            elif current_preset and "LOW" in current_preset:
-                new_mode = "COOL LOW"
-            else:
-                new_mode = "COOL HIGH"
-        elif hvac_mode == HVACMode.HEAT:
-            new_mode = "HEAT"
-        elif hvac_mode == HVACMode.FAN_ONLY:
-            new_mode = "FAN HIGH"
-        else:
+            await self.coordinator.write_mode("OFF")
+            await self.coordinator.async_request_refresh()
             return
+
+        category = {
+            HVACMode.COOL: COOL_MODES,
+            HVACMode.HEAT: HEAT_MODES,
+            HVACMode.FAN_ONLY: FAN_MODES,
+        }.get(hvac_mode)
+        if category is None:
+            return
+
+        new_mode = choose_write_mode(category, self.preset_modes, self.preset_mode)
+        if new_mode is None:
+            _LOGGER.warning("No available mode for HVAC mode %s", hvac_mode)
+            return
+
         await self.coordinator.write_mode(new_mode)
         await self.coordinator.async_request_refresh()
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
-        if preset_mode not in ALL_MODES:
-            _LOGGER.warning("Unknown preset mode: %s", preset_mode)
+        if preset_mode not in self.preset_modes:
+            _LOGGER.warning("Unavailable preset mode: %s", preset_mode)
             return
         await self.coordinator.write_mode(preset_mode)
         await self.coordinator.async_request_refresh()

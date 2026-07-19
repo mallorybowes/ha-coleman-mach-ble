@@ -36,7 +36,7 @@ class ColemanMachData:
     room_temperature: float | None = None
     set_point: int | None = None
     mode_operation: str | None = None
-    available_modes: int | None = None
+    available_modes: bytes | None = None
     is_celsius: bool = False
     zone_name: str | None = None
     unit_id: str | None = None
@@ -76,8 +76,10 @@ def _parse_data(raw_data: dict[str, bytes]) -> ColemanMachData:
         # read; widen if other units return longer identifiers.)
         d.unit_id = v[:3].hex().upper()
 
-    if (v := raw_data.get(CHAR_AVAILABLE_MODE)) and len(v) >= 1:
-        d.available_modes = v[0]
+    if (v := raw_data.get(CHAR_AVAILABLE_MODE)):
+        # Keep the full positional array; see modes.py for interpretation.
+        # (Previously only v[0] was stored, discarding capability data.)
+        d.available_modes = bytes(v)
 
     return d
 
