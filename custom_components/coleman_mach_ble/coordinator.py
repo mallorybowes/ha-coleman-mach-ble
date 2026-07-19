@@ -68,7 +68,13 @@ def _parse_data(raw_data: dict[str, bytes]) -> ColemanMachData:
         d.zone_name = _parse_string(v, 7)
 
     if (v := raw_data.get(CHAR_UNIT_ID)):
-        d.unit_id = _parse_string(v, 3)
+        # UNIT_ID is opaque binary, not ASCII (unlike ZONE_ID / MODE_OPERATION).
+        # On the test unit the 3 bytes 60 58 2A ASCII-decode to garbage ("`X*");
+        # uppercase hex displays them losslessly. The field's true semantics and
+        # length are unconfirmed across hardware — this only renders the bytes
+        # faithfully, it does not assert meaning. (Width 3 mirrors the original
+        # read; widen if other units return longer identifiers.)
+        d.unit_id = v[:3].hex().upper()
 
     if (v := raw_data.get(CHAR_AVAILABLE_MODE)) and len(v) >= 1:
         d.available_modes = v[0]
