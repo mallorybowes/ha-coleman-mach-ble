@@ -10,7 +10,7 @@ A Home Assistant custom integration for Coleman Mach Bluetooth RV Air Conditioni
 
 > **Not affiliated with or endorsed by Airxcel, Inc. or the Coleman Mach brand.**
 
-[Screencast_20260505_013413_2.webm](https://github.com/user-attachments/assets/5cf54e9b-e62a-4fdb-abf0-b323dec16a7c)
+[In action](https://github.com/user-attachments/assets/5cf54e9b-e62a-4fdb-abf0-b323dec16a7c)
 
 <img width="518" height="274" alt="Screenshot_20260505_123245" src="https://github.com/user-attachments/assets/eb637663-985a-48f3-ac48-c410701fd7a1" />
 <img width="637" height="797" alt="Screenshot_20260505_123157" src="https://github.com/user-attachments/assets/1fc85cc8-20fa-4ca4-a05c-9aa590c736e7" />
