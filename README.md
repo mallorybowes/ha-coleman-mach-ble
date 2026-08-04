@@ -6,6 +6,8 @@
 
 A Home Assistant custom integration for Coleman Mach Bluetooth RV Air Conditioning units. Provides a `climate` entity with current temperature, set point, and operating mode — all over BLE, no cloud required.  This is vibeware and no guarantees are given.  It works on my AC unit but it's also the only one I can test on.  YMMV.
 
+>**Important notification** - If you are using an HA Yellow system, **\**do not**\** update to HAOS 18+.  There's a kernel level issue that will affect this integration to where it stops working.  The issue has been identified on [this thread](https://github.com/home-assistant/operating-system/issues/4898) but it might take awhile to get the kernel update integrated.  So the "fix" for this is to stay on HAOS 17 until the patch has been released.  AFAIK, this only affects the HA Yellow hardware so if you are using this integration on anything else, you should still be ok.
+
 > **Not affiliated with or endorsed by Airxcel, Inc. or the Coleman Mach brand.**
 
 [Screencast_20260505_013413_2.webm](https://github.com/user-attachments/assets/5cf54e9b-e62a-4fdb-abf0-b323dec16a7c)
