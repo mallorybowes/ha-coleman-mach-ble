@@ -1,7 +1,7 @@
 {
   "domain": "coleman_mach_ble",
   "name": "Coleman Mach BLE",
-  "version": "1.21.0",
+  "version": "1.22.0",
   "documentation": "https://github.com/mallorybowes/ha-coleman-mach-ble",
   "issue_tracker": "https://github.com/mallorybowes/ha-coleman-mach-ble/issues",
   "requirements": [],

@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [v1.22.0] - 2026-09-10
 
 ### Added
 - `Poll Failures` diagnostic sensor (`total_increasing`) exposing the cumulative BLE poll failure count, with `consecutive_failures`, `last_failure`, `last_error` and `capture_log_ok` attributes. It overrides `available` to stay reporting while the coordinator is failing, which is exactly when it is needed
