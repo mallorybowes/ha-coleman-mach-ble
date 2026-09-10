@@ -32,6 +32,43 @@ A Home Assistant custom integration for Coleman Mach Bluetooth RV Air Conditioni
 - A Raspberry Pi (or other host) with Bluetooth support
 - Coleman Mach AC unit with BLE module
 
+## Compatibility
+
+**The BLE protocol here is reverse-engineered.** There is no published spec — the
+characteristic UUIDs and their meanings were derived by observing the Coleman Mach
+Smart Comfort app's BLE traffic, and the read order mirrors the app's own
+`initReadList`. Nothing here is confirmed by the manufacturer.
+
+Everything below was tested against exactly one unit:
+
+| | Tested configuration |
+|---|---|
+| AC control board | Coleman Mach / ICM Controls **9430-720 BLE Control Assembly** |
+| Unit ID bytes | `2C1A5F` (the device exposes no firmware version over BLE) |
+| Reported modes | `01 01 01 01 01 01 01 00 00 00` — 7 supported |
+| Host | Home Assistant Yellow, HAOS 17.3, HA 2026.7.4, onboard Bluetooth |
+
+On that unit the supported modes are Cool High / Cool Auto High / Cool Auto Low /
+Cool Low / Fan High / Fan Low / Heat. **Heat Elec and Heat Gas are reported as
+unsupported and are hidden automatically.** Your unit will likely differ.
+
+### If yours behaves differently
+
+That is expected rather than surprising, and it is useful information — the
+capability array is positional and interpreted by inference, and the `UNIT_ID`
+field's true semantics and length are unconfirmed across hardware. Differences
+have already been found: a second contributor's unit needed fixes to both the
+unit ID formatting and the mode filtering.
+
+Please open an issue rather than assuming it is broken. What makes it actionable:
+
+- your AC model / control board part number
+- the raw characteristic values, via `logger:` at `debug` for
+  `custom_components.coleman_mach_ble` (each read is logged as hex)
+- which modes your unit actually offers versus what the integration shows
+- for connection problems, the contents of `coleman_mach_ble_failures.log` in your
+  config directory, and the `Poll Failures` sensor's attributes
+
 ## Installation
 
 ### HACS (recommended)
