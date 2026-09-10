@@ -2,7 +2,10 @@
 
 DOMAIN = "coleman_mach_ble"
 DATA_COORDINATOR = "coordinator"
-DEFAULT_POLL_INTERVAL = 30  # seconds
+# Room temperature moves slowly, and each poll is a full BLE connect/disconnect
+# against a module that refuses ~2% of connections. Polling less often cuts the
+# absolute failure count proportionally at no practical cost in freshness.
+DEFAULT_POLL_INTERVAL = 120  # seconds
 
 # BLE Service
 THERMOSTAT_SERVICE_UUID = "c9282723-4680-491b-a904-c066fa81061f"

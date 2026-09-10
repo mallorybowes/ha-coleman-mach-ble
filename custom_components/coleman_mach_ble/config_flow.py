@@ -23,7 +23,7 @@ STEP_USER_SCHEMA = vol.Schema({
     vol.Required("mac_address"): str,
     vol.Required("name", default="Coleman Mach AC"): str,
     vol.Required("poll_interval", default=DEFAULT_POLL_INTERVAL): vol.All(
-        int, vol.Range(min=10, max=300)
+        int, vol.Range(min=10, max=600)
     ),
 })
 
@@ -66,7 +66,7 @@ class ColemanMachConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 
 class ColemanMachOptionsFlow(config_entries.OptionsFlow):
-    """Let the user hide modes the thermostat reports but doesn't support."""
+    """Hide unsupported modes, and adjust the poll interval."""
 
     def __init__(self, config_entry) -> None:
         self._entry = config_entry
@@ -77,12 +77,21 @@ class ColemanMachOptionsFlow(config_entries.OptionsFlow):
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
 
-        current = self._entry.options.get(OPTION_EXCLUDED_MODES, [])
+        current_excluded = self._entry.options.get(OPTION_EXCLUDED_MODES, [])
+        # Falls back to the value captured at setup, so an entry configured
+        # before this option existed keeps its original interval.
+        current_interval = self._entry.options.get(
+            "poll_interval",
+            self._entry.data.get("poll_interval", DEFAULT_POLL_INTERVAL),
+        )
         schema = vol.Schema(
             {
                 vol.Optional(
-                    OPTION_EXCLUDED_MODES, default=current
+                    OPTION_EXCLUDED_MODES, default=current_excluded
                 ): cv.multi_select({mode: mode for mode in ALL_MODES}),
+                vol.Required(
+                    "poll_interval", default=current_interval
+                ): vol.All(int, vol.Range(min=10, max=600)),
             }
         )
         return self.async_show_form(step_id="init", data_schema=schema)
