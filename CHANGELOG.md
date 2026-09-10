@@ -1,5 +1,20 @@
 # Changelog
 
+## [v1.23.0] - 2026-09-10
+
+### Added
+- hassfest and HACS validation workflows, run on push, PR, and weekly
+
+### Fixed
+- LICENSE was a truncated Apache-2.0 (163 of 201 lines), so GitHub reported SPDX `NOASSERTION` and HACS validation failed. Replaced with the canonical text
+- Brand assets moved to `custom_components/coleman_mach_ble/brand/` — HACS looks for `brand/`, not `brands/`
+- Removed the `homeassistant` key from `manifest.json`, which is not valid for custom integrations; the minimum Home Assistant version now lives in `hacs.json`
+- Manifest keys sorted as hassfest requires (`domain`, `name`, then alphabetical)
+
+### Changed
+- README rewritten: documents the tested control board and that the protocol is reverse-engineered, plus entities, options, diagnostics and contributing guidance
+- Corrected the Home Assistant Yellow notice — HAOS 18.0-18.2 break onboard Bluetooth, but this is fixed in 18.3
+
 ## [v1.22.0] - 2026-09-10
 
 ### Added
