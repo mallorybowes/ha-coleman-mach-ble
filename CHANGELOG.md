@@ -1,5 +1,19 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- `Poll Failures` diagnostic sensor (`total_increasing`) exposing the cumulative BLE poll failure count, with `consecutive_failures`, `last_failure`, `last_error` and `capture_log_ok` attributes. It overrides `available` to stay reporting while the coordinator is failing, which is exactly when it is needed
+- Failure capture to `coleman_mach_ble_failures.log` in the config dir, recording BLE context (`in_scan`, `rssi`, last advertisement time) plus the exception. Full traceback is written only for the first failure of a streak; the file rotates at 1 MB for a ~2 MB ceiling
+- Options flow for `poll_interval`, so it can be changed from the UI without re-adding the integration. An update listener reloads the entry so the change takes effect immediately
+
+### Changed
+- Tolerate transient BLE failures instead of going `unavailable` on the first miss. `MAX_CONSECUTIVE_FAILURES = 2` returns the last known data for a single blip; a real outage still surfaces after ~4 minutes
+- Default poll interval 30s -> 120s
+
+### Notes
+Measured over 16.1h on the 30s interval: 34 failures (~2.1/hr, ~2% of connect attempts), every one an isolated single, never back to back — so a threshold of 2 absorbs all of them. Each failure was `in_scan=True` with rssi -39..-57 and `Failed to connect after 4 attempt(s): TimeoutError`, i.e. the AC advertising normally but refusing the GATT connection. Not range, and not contention on the HA side: the host is on ethernet with `wlan0` down (ruling out WiFi/BT coexistence on the combo bcm43438), and BLE failures showed no correlation with Music Assistant playback (5.9% observed vs 6.1% expected by chance). The 120s interval cuts connect attempts ~72%, which should take failures from ~50/day to ~14/day.
+
 ## [v1.21] - 2026-05-08
 
 ### Fixed

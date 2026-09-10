@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
+import traceback
 from dataclasses import dataclass
 from datetime import timedelta
 
@@ -13,6 +15,7 @@ from bleak_retry_connector import establish_connection, BleakNotFoundError
 from homeassistant.components import bluetooth
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import dt as dt_util
 
 from .const import (
     DOMAIN,
@@ -29,6 +32,35 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 BLE_READ_TIMEOUT = 10.0  # seconds
+
+# The AC's BLE module intermittently refuses a connection for a single poll.
+# Ride out short blips instead of flipping the entity to unavailable on the
+# first miss; a real outage still surfaces after MAX_CONSECUTIVE_FAILURES polls.
+# Measured: 34 failures over 16h, every one an isolated single, never back to
+# back. 2 is enough to absorb that, and keeps time-to-unavailable at ~4 min on
+# the 120s poll cycle rather than the ~6 min a threshold of 3 would give.
+MAX_CONSECUTIVE_FAILURES = 2
+
+# Failures are rare (~1/hour) and HA keeps no log file here, so each one is
+# appended to this file in the config dir with BLE context for later diagnosis.
+FAILURE_LOG_NAME = "coleman_mach_ble_failures.log"
+
+# A sustained outage keeps polling and failing every ~33s, so the file must be
+# bounded: rotate once at 1 MB, giving a hard ceiling of ~2 MB across both.
+FAILURE_LOG_MAX_BYTES = 1_000_000
+
+
+def _append_failure_log(path: str, text: str) -> bool:
+    """Append a failure record. Runs in the executor — never on the event loop."""
+    try:
+        if os.path.exists(path) and os.path.getsize(path) + len(text) > FAILURE_LOG_MAX_BYTES:
+            os.replace(path, f"{path}.1")
+        with open(path, "a", encoding="utf-8") as handle:
+            handle.write(text)
+        return True
+    except OSError as err:  # diagnostics must never break the poll
+        _LOGGER.warning("Could not write %s: %s", path, err)
+        return False
 
 
 @dataclass
@@ -134,6 +166,15 @@ class ColemanMachCoordinator(DataUpdateCoordinator[ColemanMachData]):
     def __init__(self, hass: HomeAssistant, mac_address: str, interval: int) -> None:
         self.mac_address = mac_address
         self._ble_lock = asyncio.Lock()
+        self._consecutive_failures = 0
+        self._failure_log_path = hass.config.path(FAILURE_LOG_NAME)
+        # Surfaced by the diagnostic sensor so the failure rate stays visible in
+        # HA (and the recorder) even though tolerated blips no longer show up as
+        # entity unavailability.
+        self.failure_count = 0
+        self.last_failure: str | None = None
+        self.last_failure_error: str | None = None
+        self.log_write_ok = True
         super().__init__(
             hass,
             _LOGGER,
@@ -143,7 +184,80 @@ class ColemanMachCoordinator(DataUpdateCoordinator[ColemanMachData]):
 
     async def _async_update_data(self) -> ColemanMachData:
         async with self._ble_lock:
-            return await _read_device(self.hass, self.mac_address)
+            try:
+                data = await _read_device(self.hass, self.mac_address)
+            except Exception as err:
+                self._consecutive_failures += 1
+                await self._record_failure(err)
+                if self.data is not None and self._consecutive_failures < MAX_CONSECUTIVE_FAILURES:
+                    _LOGGER.warning(
+                        "Poll %d/%d failed for %s (%s) — keeping last known data",
+                        self._consecutive_failures,
+                        MAX_CONSECUTIVE_FAILURES,
+                        self.mac_address,
+                        err,
+                    )
+                    return self.data
+                raise
+
+        if self._consecutive_failures:
+            _LOGGER.warning(
+                "Recovered after %d consecutive failure(s) for %s",
+                self._consecutive_failures,
+                self.mac_address,
+            )
+            self._consecutive_failures = 0
+        return data
+
+    async def _record_failure(self, err: Exception) -> None:
+        """Record the real exception plus BLE context for later diagnosis."""
+        try:
+            self.failure_count += 1
+            self.last_failure = dt_util.utcnow().isoformat()
+            self.last_failure_error = f"{type(err).__name__}: {err}"
+
+            service_info = bluetooth.async_last_service_info(
+                self.hass, self.mac_address, connectable=True
+            )
+            in_scan = (
+                bluetooth.async_ble_device_from_address(
+                    self.hass, self.mac_address, connectable=True
+                )
+                is not None
+            )
+            header = (
+                f"{self.last_failure} "
+                f"attempt={self._consecutive_failures}/{MAX_CONSECUTIVE_FAILURES} "
+                f"total={self.failure_count} "
+                f"in_scan={in_scan} "
+                f"rssi={getattr(service_info, 'rssi', None)} "
+                f"advertised={getattr(service_info, 'time', None)}\n"
+                f"  {self.last_failure_error}\n"
+            )
+            # Full traceback only for the first failure of a streak. During a
+            # sustained outage the rest are the same exception every ~33s, and
+            # repeating the traceback would bury the interesting first record.
+            if self._consecutive_failures == 1:
+                tb = traceback.format_exception(type(err), err, err.__traceback__)
+                record = header + "".join(
+                    f"  {line}\n" for line in "".join(tb).rstrip().splitlines()
+                ) + "\n"
+                _LOGGER.warning("BLE poll failure for %s:\n%s", self.mac_address, record)
+            else:
+                record = header
+                _LOGGER.warning(
+                    "BLE poll failure %d for %s: %s",
+                    self._consecutive_failures,
+                    self.mac_address,
+                    self.last_failure_error,
+                )
+
+            self.log_write_ok = await self.hass.async_add_executor_job(
+                _append_failure_log, self._failure_log_path, record
+            )
+        except Exception:  # diagnostics must never mask the original failure
+            self.log_write_ok = False
+            _LOGGER.exception("Could not record BLE failure diagnostics")
 
     async def write_set_point(self, value: int) -> None:
         async with self._ble_lock:

@@ -20,7 +20,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
 
     mac_address = entry.data["mac_address"]
-    poll_interval = entry.data.get("poll_interval", DEFAULT_POLL_INTERVAL)
+    # Options win over the original setup value so the interval can be changed
+    # from the UI without re-adding the integration.
+    poll_interval = entry.options.get(
+        "poll_interval", entry.data.get("poll_interval", DEFAULT_POLL_INTERVAL)
+    )
 
     coordinator = ColemanMachCoordinator(hass, mac_address, poll_interval)
 
@@ -51,5 +55,5 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Reload the entry so updated options take effect."""
+    """Reload the entry so updated options (modes, poll interval) take effect."""
     await hass.config_entries.async_reload(entry.entry_id)

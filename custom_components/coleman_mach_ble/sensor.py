@@ -9,6 +9,7 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorStateClass,
 )
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -30,6 +31,7 @@ async def async_setup_entry(
     async_add_entities([
         ColemanMachZoneSensor(coordinator, entry),
         ColemanMachUnitIDSensor(coordinator, entry),
+        ColemanMachPollFailureSensor(coordinator, entry),
     ])
 
 
@@ -72,3 +74,42 @@ class ColemanMachUnitIDSensor(_ColemanMachSensor):
         if not self.coordinator.data:
             return None
         return self.coordinator.data.unit_id or None
+
+
+class ColemanMachPollFailureSensor(_ColemanMachSensor):
+    """Cumulative BLE poll failures.
+
+    Tolerated blips no longer show up as entity unavailability, so this is what
+    keeps the failure rate visible — in HA and in the recorder, not only in the
+    capture file. It deliberately overrides `available`: a CoordinatorEntity
+    would go unavailable exactly when the failures are happening, which is the
+    one moment this needs to keep reporting.
+    """
+
+    _attr_name = "Poll Failures"
+    _attr_icon = "mdi:bluetooth-off"
+    _attr_state_class = SensorStateClass.TOTAL_INCREASING
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator: ColemanMachCoordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry)
+        self._attr_unique_id = f"{coordinator.mac_address}_poll_failures"
+
+    @property
+    def available(self) -> bool:
+        return True
+
+    @property
+    def native_value(self) -> int:
+        return self.coordinator.failure_count
+
+    @property
+    def extra_state_attributes(self) -> dict[str, object]:
+        return {
+            "consecutive_failures": self.coordinator._consecutive_failures,
+            "last_failure": self.coordinator.last_failure,
+            "last_error": self.coordinator.last_failure_error,
+            # False means the capture file stopped being written — otherwise
+            # that would fail silently and take the failure record with it.
+            "capture_log_ok": self.coordinator.log_write_ok,
+        }
