@@ -160,6 +160,37 @@ bluetoothctl remove <YOUR_MAC_ADDRESS>
   Force-close it, or turn off Bluetooth on that phone.
 - **Power cycle the AC.** Kill the breaker for 10 seconds to clear its pairing state.
 
+### Can I use a Bluetooth proxy? No
+
+An ESPHome Bluetooth proxy **cannot** drive this AC, no matter how you place it.
+This is worth knowing before you buy or build one, because everything about the
+setup looks like it should work.
+
+The AC only accepts connections from a host it has been **paired** with, and that
+bond lives in BlueZ on the Home Assistant host, under `/var/lib/bluetooth`. It is
+host-specific and cannot be transferred. An ESP32 proxy has no bond, so the AC
+drops its connection attempts. There is no way around it: `bluetooth_proxy`
+exposes no mechanism to perform a passkey pairing, and this AC's pairing mode
+requires a code read off its LCD within a short window.
+
+The failure is quiet, and Home Assistant papers over it — it retries via the
+onboard adapter, which *does* hold the bond, so everything keeps working and you
+are left wondering why the proxy is apparently ignored. Confirmed on a proxy
+placed under a foot from the unit with a stronger signal than the onboard radio:
+
+```
+scanners[0]  hci0          HaScanner        connect_failures: none
+scanners[1]  bt-proxy      ESPHomeScanner   connect_failures for AC: 2
+advertisement_tracker source for AC: <the proxy>
+```
+
+The proxy was heard fine and was promoted to the advertisement source — it simply
+could not establish a connection. You can read this yourself in
+**Settings -> Devices & Services -> Bluetooth -> download diagnostics**.
+
+A proxy is still useful for *unbonded* BLE devices on the same host. It just
+cannot help this one.
+
 ### Entity keeps going unavailable
 
 Check `sensor.<name>_poll_failures`. If it is climbing steadily, see Diagnostics below.

@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+- Troubleshooting: document that an ESPHome Bluetooth proxy cannot drive this AC, because the pairing bond lives in BlueZ on the Home Assistant host and cannot be transferred to an ESP32
+
 ## [v1.23.0] - 2026-09-10
 
 ### Added
