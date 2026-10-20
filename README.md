@@ -1,6 +1,6 @@
 # Coleman Mach BLE — Home Assistant Integration
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg)](https://github.com/hacs/integration)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Validate](https://github.com/mallorybowes/ha-coleman-mach-ble/actions/workflows/validate.yml/badge.svg)](https://github.com/mallorybowes/ha-coleman-mach-ble/actions/workflows/validate.yml)
 
@@ -69,9 +69,10 @@ hidden. **Your unit will likely differ**, and that is worth reporting — see
 
 ### HACS
 
-1. HACS → **Integrations** → ⋮ → **Custom repositories**
-2. Add `https://github.com/mallorybowes/ha-coleman-mach-ble` as an **Integration**
-3. Search for **Coleman Mach BLE**, install, restart Home Assistant
+Coleman Mach BLE is in the HACS default store.
+
+1. In HACS, search for **Coleman Mach BLE**
+2. Install, then restart Home Assistant
 
 ### Manual
 

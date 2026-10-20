@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Changed
+- Listed in the HACS default store (hacs/default#10839): README badge and install steps no longer need a custom repository
 - Troubleshooting: document that an ESPHome Bluetooth proxy cannot drive this AC, because the pairing bond lives in BlueZ on the Home Assistant host and cannot be transferred to an ESP32
 
 ## [v1.23.0] - 2026-09-10
